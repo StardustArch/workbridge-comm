@@ -8,18 +8,18 @@ import org.springframework.web.bind.annotation.*;
 import com.workbrigde.chat.dto.MessageDTO;
 import com.workbrigde.chat.mapper.ChatMessageMapper;
 import com.workbrigde.chat.model.ChatMessage;
-import com.workbrigde.chat.repository.MessageRepository;
 import com.workbrigde.chat.service.KafkaMessageProducer;
+import com.workbrigde.chat.service.MessageService;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/messages")
+@RequestMapping("/api/v1/messages")
 @RequiredArgsConstructor
 public class MessageController {
 
     private final KafkaMessageProducer kafkaProducer;
-    private final MessageRepository repository;
+    private final MessageService messageService;
 
     @PostMapping
     public ResponseEntity<Void> sendMessage(@RequestBody MessageDTO message) {
@@ -32,6 +32,6 @@ public class MessageController {
     public List<ChatMessage> getMessages(
             @RequestParam String senderId,
             @RequestParam String receiverId) {
-        return repository.findBySenderIdAndReceiverId(senderId, receiverId);
+        return messageService.getMessages(senderId, receiverId);
     }
 }

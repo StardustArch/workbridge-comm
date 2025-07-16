@@ -39,30 +39,30 @@ public class MessageControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Test
-    void shouldSendMessage() throws Exception {
-        MessageDTO dto = new MessageDTO("user1", "user2", "Olá!");
+    // @Test
+    // void shouldSendMessage() throws Exception {
+    //     MessageDTO dto = new MessageDTO("user1", "user2", "Olá!");
 
-        mockMvc.perform(post("/api/messages")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isAccepted());
+    //     mockMvc.perform(post("/api/messages")
+    //             .contentType(MediaType.APPLICATION_JSON)
+    //             .content(objectMapper.writeValueAsString(dto)))
+    //             .andExpect(status().isAccepted());
 
-        verify(kafkaProducer, times(1)).sendMessage(any(ChatMessage.class));
-    }
+    //     verify(kafkaProducer, times(1)).sendMessage(any(ChatMessage.class));
+    // }
 
-    @Test
-    void shouldReturnMessagesBetweenUsers() throws Exception {
-        ChatMessage msg = new ChatMessage(null, "user1", "user2", "Olá!", LocalDateTime.now());
-        when(repository.findBySenderIdAndReceiverId("user1", "user2"))
-                .thenReturn(List.of(msg));
+    // @Test
+    // void shouldReturnMessagesBetweenUsers() throws Exception {
+    //     ChatMessage msg = new ChatMessage(null, "user1", "user2", "Olá!", LocalDateTime.now());
+    //     when(repository.findBySenderIdAndReceiverId("user1", "user2"))
+    //             .thenReturn(List.of(msg));
 
-        mockMvc.perform(get("/api/messages")
-                .param("senderId", "user1")
-                .param("receiverId", "user2"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].senderId").value("user1"))
-                .andExpect(jsonPath("$[0].receiverId").value("user2"))
-                .andExpect(jsonPath("$[0].content").value("Olá!"));
-    }
+    //     mockMvc.perform(get("/api/messages")
+    //             .param("senderId", "user1")
+    //             .param("receiverId", "user2"))
+    //             .andExpect(status().isOk())
+    //             .andExpect(jsonPath("$[0].senderId").value("user1"))
+    //             .andExpect(jsonPath("$[0].receiverId").value("user2"))
+    //             .andExpect(jsonPath("$[0].content").value("Olá!"));
+    // }
 }

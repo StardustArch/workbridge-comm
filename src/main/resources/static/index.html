@@ -1,17 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Chat WebSocket</title>
-</head>
-<body>
+  </head>
+  <body>
     <h2>Chat WebSocket Test</h2>
 
     <div>
-        <label>Sender ID: <input type="text" id="senderId" value="user1"></label><br>
-        <label>Receiver ID: <input type="text" id="receiverId" value="user2"></label><br>
-        <label>Message: <input type="text" id="messageContent"></label><br>
-        <button onclick="sendMessage()">Send</button>
+      <label>
+        Seu ID (receiver): <input type="text" id="senderId" placeholder="Seu ID" />
+      </label><br />
+      <label>
+        Enviar para (receiver): <input type="text" id="receiverId" placeholder="ID do destinatário" />
+      </label><br />
+      <label>
+        Mensagem: <input type="text" id="messageContent" />
+      </label><br />
+      <button onclick="connect()">Entrar no Chat</button>
+      <button onclick="sendMessage()">Enviar Mensagem</button>
     </div>
 
     <h3>Mensagens:</h3>
@@ -20,48 +27,54 @@
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
     <script>
-        let stompClient = null;
+      let stompClient = null;
+      let connected = false;
 
-        function connect() {
-            const socket = new SockJS('/ws');
-            stompClient = Stomp.over(socket);
-            stompClient.connect({}, function () {
-                const senderId = document.getElementById('senderId').value;
-                const receiverId = document.getElementById('receiverId').value;
-                const topic = `/topic/messages/${senderId}-${receiverId}`;
+      function connect() {
+        if (connected) return; // evita múltiplas conexões
 
-                stompClient.subscribe(topic, function (messageOutput) {
-                    const message = JSON.parse(messageOutput.body);
-                    showMessage(message);
-                });
+        const socket = new SockJS("/ws");
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function () {
+          const receiverId = document.getElementById("senderId").value; // id do usuário que está abrindo a aba
+          const topic = `/topic/messages/${receiverId}`;
 
-                console.log("Connected and subscribed to " + topic);
-            });
+          stompClient.subscribe(topic, function (messageOutput) {
+            const message = JSON.parse(messageOutput.body);
+            showMessage(message);
+          });
+
+          connected = true;
+          console.log("Conectado e inscrito em " + topic);
+        });
+      }
+
+      function sendMessage() {
+        const senderId = document.getElementById("senderId").value;
+        const receiverId = document.getElementById("receiverId").value;
+        const content = document.getElementById("messageContent").value;
+
+        if (!connected) {
+          alert("Você precisa entrar no chat primeiro!");
+          return;
         }
 
-        function sendMessage() {
-            const senderId = document.getElementById('senderId').value;
-            const receiverId = document.getElementById('receiverId').value;
-            const content = document.getElementById('messageContent').value;
+        fetch("/api/messages", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ senderId, receiverId, content }),
+        }).then(() => {
+          document.getElementById("messageContent").value = "";
+        });
+      }
 
-            fetch('/api/messages', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ senderId, receiverId, content })
-            }).then(() => {
-                document.getElementById('messageContent').value = '';
-            });
-        }
-
-        function showMessage(message) {
-            const li = document.createElement('li');
-            li.textContent = `[${message.senderId}] -> [${message.receiverId}]: ${message.content}`;
-            document.getElementById('chatMessages').appendChild(li);
-        }
-
-        connect();
+      function showMessage(message) {
+        const li = document.createElement("li");
+        li.textContent = `[${message.senderId}] -> [${message.receiverId}]: ${message.content}`;
+        document.getElementById("chatMessages").appendChild(li);
+      }
     </script>
-</body>
+  </body>
 </html>

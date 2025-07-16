@@ -14,7 +14,7 @@ public class WebSocketMessageController {
     private final SimpMessagingTemplate messagingTemplate;
 
     public void sendToWebSocket(ChatMessage message) {
-        String topic = String.format("/topic/messages/%s-%s", message.getSenderId(), message.getReceiverId());
+        String topic = String.format("/topic/messages/%s", message.getReceiverId());
         messagingTemplate.convertAndSend(topic, message);
     }
 }

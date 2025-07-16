@@ -3,15 +3,15 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://postgres:5432/chatdb
-    username: chatuser
-    password: chatpass
+    url: ${POSTGRES_URL}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
   kafka:
-    bootstrap-servers: kafka:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
     consumer:
       group-id: chat-group
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
